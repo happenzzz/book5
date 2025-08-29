@@ -690,7 +690,7 @@ IQ 300에 가까운 지능으로 설계된 재귀개선 모듈이 즉시 전권�
       // - 1, 2장: 반드시 "그 장의 마지막 전용 페이지"에 가운데 배치
       // - 7장: 텍스트 뒤 다음 페이지에 배치(항상 강제 개행)
       // - 3,4,5,6장: 기존 방식(같은 페이지 말미에 시도; 공간이 모자라면 자동으로 다음 페이지 맨 위에 배치)
-      if (chapNo===1 || chapNo===2 || chapNo===5 || chapNo===7){
+      if (chapNo===1 || chapNo===2 || chapNo===4 || chapNo===5 || chapNo===7){
         add(blocks,{type:'forcebreak'});
         add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:true, chap:chapNo});
         add(blocks,{type:'forcebreak'});
