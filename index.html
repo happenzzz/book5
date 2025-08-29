@@ -167,6 +167,8 @@ body{
   /* 4) 가독성 */
   .content{font-size:clamp(1.02rem,4.6vw,1.15rem);line-height:1.9}
   .content h2.chapter{font-size:clamp(1.4rem,6vw,1.8rem)}
+}
+
 /* === Mobile single-page reader v2 (phones) === */
 @media (max-width: 900px){
   :root{ --gutter: 1rem; }
@@ -231,8 +233,6 @@ body{
   @media (max-width: 900px){
     .shelf{ min-height:calc(100svh - 48px); }
   }
-}
-
 }
 </style>
 </head>
@@ -487,8 +487,6 @@ body{
 그리고 화면 자막은 다음 장을 예고했다.
 “12월 25일, 크리스마스에 아우로라-T 전격 공개.”
 
-
-
 제 5 장 ― 이안의 밤 대화
 
 겨울방학을 이틀 앞둔 평일 밤.
@@ -534,9 +532,6 @@ body{
 “인공지능은 우리의 거울이다. 거울이 흐려지면, 먼저 닦아야 할 사람은 결국 우리 자신이다.”
 
 명준은 그 문장을 한동안 바라봤다. 입가에는 미소가 걸렸지만, 눈끝에는 지울 수 없는 그늘이 드리워졌다. 아이가 커 갈 세상에 대한 기대와, 기술이 사람보다 먼저 달려갈지도 모른다는 걱정이 한자리에 겹쳐 흔들리고 있었다.
-
-
-
 
 제 6 장 ― 
 
@@ -696,10 +691,14 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     const lines = normalize(t).split("\n");
     const blocks = [];
 
-    // Cover pages (0, 0.5) — no page numbers
+    // Cover pages (1p, 2p) — no page numbers
     add(blocks,{type:'cover', src:'assets/cover-front.png', alt:'책 표지 — 앞'});
     add(blocks,{type:'forcebreak'});
     add(blocks,{type:'cover', src:'assets/cover-back.png', alt:'책 표지 — 뒤'});
+    add(blocks,{type:'forcebreak'});
+
+    // === NEW: 3페이지에 새 그림 고정 삽입 ===
+    add(blocks,{type:'figure', src:'assets/p3.png', alt:'3페이지 삽화', center:true, chap:0});
     add(blocks,{type:'forcebreak'});
 
     let chap = null, chapNo = 0, chapParas = [];
@@ -718,10 +717,7 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
       add(blocks,{type:'gap', lines:5});
       for (const p of paras) add(blocks,{type:'p', text:p});
 
-      // === 그림 배치 규칙 ===
-      // - 1, 2장: 반드시 "그 장의 마지막 전용 페이지"에 가운데 배치
-      // - 7장: 텍스트 뒤 다음 페이지에 배치(항상 강제 개행)
-      // - 3,4,5,6장: 기존 방식(같은 페이지 말미에 시도; 공간이 모자라면 자동으로 다음 페이지 맨 위에 배치)
+      // === 그림 배치 규칙(원형 유지) ===
       if (chapNo===1 || chapNo===2 || chapNo===4 || chapNo===5 || chapNo===7){
         add(blocks,{type:'forcebreak'});
         add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:true, chap:chapNo});
@@ -735,10 +731,9 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
         add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:false, chap:chapNo, normal:true});
         add(blocks,{type:'forcebreak'});
       } else {
-        // 3,4,5,6장: 같은 페이지 말미에 우선 배치 (normal: 높이 50%)
+        // 3,6 등: 같은 페이지 말미에 우선 배치 (normal: 높이 50%)
         add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:false, chap:chapNo, normal:true});
         if (chapNo===6){
-          // 사용자 글 입력은 충분한 공간 확보를 위해 다음 페이지에서
           add(blocks,{type:'forcebreak'});
           add(blocks,{type:'edit6', text: savedCh6});
           add(blocks,{type:'forcebreak'});
