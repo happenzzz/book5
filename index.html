@@ -35,6 +35,11 @@ body{
 .toolbtn{border:1px solid #d0c6b7;background:#fffaf0;padding:.38rem .7rem;border-radius:8px;cursor:pointer;font-size:.95rem;color:#5d4b36}
 .toolbtn.active{background:#ffe9a6;border-color:#f0d16b}
 
+/* Chapter jump nav */
+.chapnav{display:flex;gap:.35rem;flex-wrap:wrap;align-items:center}
+.chapbtn{border:1px solid #d0c6b7;background:#fff;border-radius:999px;padding:.28rem .6rem;font-size:.9rem;color:#5d4b36;cursor:pointer}
+.chapbtn.active{background:#2f67ff;color:#fff;border-color:#2f67ff}
+
 /* Book */
 .shelf{min-height:calc(100vh - 48px);display:grid;place-items:center;padding:1.2rem}
 .book{position:relative;width:min(1680px,98vw);aspect-ratio:16/9;perspective:2200px}
@@ -57,11 +62,21 @@ body{
 .leadspace{height:33%;min-height:33%}
 .gap5{height:calc(5 * var(--lh))}
 
+/* 6장 트리거(‘모두의’ → 투명 버튼) */
+.ch6-trigger{cursor:pointer}
+
+/* 등장 애니메이션 */
+@keyframes ch6Reveal{
+  0%{opacity:0;transform:scale(.985) translateY(8px);filter:blur(2px)}
+  100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}
+}
+.reveal-ch6{animation:ch6Reveal .85s cubic-bezier(.2,.6,.2,1);}
+
 /* Figures */
 .figure{position:relative;display:block;width:100%;border:1px dashed #e0d7c7;background:#faf6ee;border-radius:8px;overflow:hidden;margin:.25rem 0 0}
 .figure img{width:100%;height:100%;object-fit:contain;display:block}
 .figure.page-center{margin:auto;height:86%}
-.figure.normal{height:50%} /* 일반 그림 높이: 반쪽 페이지 */
+.figure.normal{height:50%}
 .figure .ghost-img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60%;height:60%;opacity:0;cursor:pointer;border:none;background:transparent;z-index:6}
 .figure .ghost-reset{position:absolute;right:6px;top:6px;width:56px;height:36px;opacity:0;cursor:pointer;border:none;background:transparent;z-index:7}
 
@@ -151,20 +166,13 @@ body{
 
 /* === MOBILE SINGLE-PAGE FIX (덮어쓰기) === */
 @media (max-width:1100px){
-  /* 1) 모바일에선 왼쪽 페이지가 실제 본문을 가짐 */
   .left{display:flex !important}
-
-  /* 2) 오른쪽 페이지는 내용 숨기고, 다음 화살표만 남김 */
   .right{position:absolute;inset:0;width:auto;border:none;background:transparent;box-shadow:none;pointer-events:none}
   .right .pad, .right canvas, .right .rubric, .right .footer{opacity:0}
   .right .nav.next{position:absolute;right:0;top:0;bottom:0;width:60px;opacity:1;pointer-events:auto}
-
-  /* 3) 전체 폭 사용 및 측정자도 단일 페이지 기준 */
   .book{width:100vw;max-width:100vw}
   .spread{inset:.6rem .6rem 1.2rem .6rem}
   #measure{width:calc(100% - 2*var(--gutter)) !important;height:calc(100% - 118px) !important}
-
-  /* 4) 가독성 */
   .content{font-size:clamp(1.02rem,4.6vw,1.15rem);line-height:1.9}
   .content h2.chapter{font-size:clamp(1.4rem,6vw,1.8rem)}
 }
@@ -172,60 +180,30 @@ body{
 /* === Mobile single-page reader v2 (phones) === */
 @media (max-width: 900px){
   :root{ --gutter: 1rem; }
-
-  /* 높이 유지: 3:4 비율을 계속 사용 */
-  .book{
-    width:100vw; max-width:100vw;
-    aspect-ratio:3/4;               /* ← 중요: 높이 확보 */
-    position:relative;
-  }
-
-  /* 예전처럼 absolute로 꽉 채움 + 여백만 살짝 축소 */
-  .spread{
-    position:absolute; inset:.6rem .5rem 1rem .5rem;
-    display:block; filter:none;
-  }
-
-  /* 한 페이지(왼쪽)만 전폭으로 사용 */
+  .book{ width:100vw; max-width:100vw; aspect-ratio:3/4; position:relative; }
+  .spread{ position:absolute; inset:.6rem .5rem 1rem .5rem; display:block; filter:none; }
   .page{ width:100%; height:100%; border-radius:14px; }
-  .page::after{ display:none; }   /* 중앙 접힘효과 제거 */
-  .left{ display:flex; }          /* 내용 보이도록 */
-  
-  /* 오른쪽 페이지는 내용 숨기고 '다음' 화살표만 남김 */
+  .page::after{ display:none; }
+  .left{ display:flex; }
   .right{
     position:absolute; inset:0; width:auto;
     border:none; background:transparent; box-shadow:none;
-    pointer-events:none;           /* 내부 클릭 막기 */
+    pointer-events:none;
   }
-  .right .pad,
-  .right .footer,
-  .right .rubric,
-  .right .content,
-  .right canvas{ display:none !important; }
-  .right .nav.next{ pointer-events:auto; } /* 다음으로 넘기기 허용 */
-
-  /* 화살표 위치/크기 */
+  .right .pad, .right .footer, .right .rubric, .right .content, .right canvas{ display:none !important; }
+  .right .nav.next{ pointer-events:auto; }
   .nav{ width:52px; }
   .left .nav.prev{ left:.25rem; }
   .right .nav.next{ right:.25rem; }
-
-  /* 가독성(폰 타이포) */
   .pad{ padding:.9rem var(--gutter) .75rem var(--gutter); }
   .content{ font-size:clamp(1rem,3.6vw,1.1rem); line-height:1.9; }
   .rubric{ font-size:.95rem; }
   .footer{ font-size:.85rem; }
   .progress{ height:3px; }
   .hint{ display:none; }
-
-  /* 삽화는 화면 높이에 맞게 */
   .figure{ margin:.5rem 0; }
   .figure.page-center, .figure.normal{ height:auto; max-height:62vh; }
-
-  /* 페이지 측정용 요소: 전폭 + 유효 높이 유지 (중요) */
-  #measure{
-    width:calc(100% - 2*var(--gutter)) !important;
-    height:calc(100% - 118px) !important;
-  }
+  #measure{ width:calc(100% - 2*var(--gutter)) !important; height:calc(100% - 118px) !important; }
 }
 
 /* 브라우저 주소창 높이 변동 보정(지원 시) */
@@ -245,6 +223,7 @@ body{
     <button class="toolbtn" id="clearBtn" title="보이는 펼친 면 전체 지우기">전체지우기</button>
     <button class="toolbtn" id="publishBtn" title="PDF로 저장">출판(PDF)</button>
   </div>
+  <div class="chapnav" id="chapNav" aria-label="장 이동"></div>
 </div>
 
 <main class="shelf">
@@ -313,6 +292,70 @@ body{
 <script>
 (() => {
   const title = "모두의 알고리즘";
+
+  // === 상수/스토리지 키 ===
+  const HL_KEY = 'webbook_highlights_v6';
+  const ch6Key = 'wb_ch6_text';        // 사용자가 고친 6장 텍스트
+  const ch7TitleKey = 'wb_ch7_title';
+  const ch7BodyKey = 'wb_ch7_body';
+  const colophonBodyKey = 'wb_colophon_body';
+  const IMG_KEY = 'wb_image_overrides_v3';
+  const CH6_MODE_KEY = 'wb_ch6_mode';  // 'blank' | 'hidden'
+  const CH6_ANIM_KEY = 'wb_ch6_anim';  // '1'이면 다음 렌더에서 등장 애니메이션
+
+  // === 6장 히든 전개(본문으로 출력) ===
+  const HIDDEN_CH6_TITLE = "제 6 장 ― 모두의 알고리즘 (히든 전개)";
+  const HIDDEN_CH6_TEXT = `
+늦은 저녁, 부설초 과학실. 교실 불빛만 노랗게 남아 있었다.
+노트북 네 대가 책상 위에 나란히 놓였고, 한 대는 통제실 서버와, 다른 한 대는 아우로라-T 테스트 유닛과 직결돼 있었다.
+
+이진석(4-1반 담임): "접속 완료. 실시간 로그 보이죠?"
+김하린 중위(통제실): "보입니다. 원격 차단키는 제 손에 있어요. 혹시라도 이상하면 바로 멈추죠."
+박명준(연구원, 이안 아빠): "알고리즘 모듈 열겠습니다. 이안, 너는 이벤트 타임라인만 정리해 줘."
+박이안(4-1반 학생): "네! '전개—판단—행동—로그' 순서로 칸 만들었어요."
+
+명준이 리포지터리에서 행동정책.pol과 학습핵심.core를 펼쳤다. 화면에 수십 개의 규칙이 스크롤되다가, 낯선 표기가 눈에 들어왔다.
+"어… 잠깐." 명준의 목소리가 굳었다.
+
+policy_override := true        // 조건부 우선권 부여
+if target_zone == "N-line" and reflect_heat > τ then
+    threat_score += 0.45       // 경계 대상 상향
+
+"이건, 우리 몰래 서강호가 북한에 공격을 암시하는 알고리즘을 넣었잖아!"
+
+하린이 헤드셋을 고쳐 쥐었다. "확실해요?"
+"예. 이 가중치면 반사열 같은 무해한 신호도 위협으로 부풀려요. 그리고…"
+
+명준이 다른 탭을 열었다. sysd_daemon이라는 숨은 서비스가 있었다.
+
+daemon "harbor" {
+  collect: operator_id, location, mic_buffer
+  uplink: shadow.tunnel / every 10m
+}
+
+"백도어 프로그램이에요. 운영자 아이디, 위치, 음성 버퍼까지 모아서 보냅니다."
+이진석이 난간을 움켜쥐었다. "어딘가에 넘기려던 걸까?"
+이안이 낮게 중얼거렸다. "꿍꿍이가 있는거야. 고약해."
+
+교실의 공기가 더 무거워졌다. 하린이 차분히 정리했다.
+"좋아요. 절차대로 갑시다. 1) 의심 모듈 격리, 2) 통신 포트 봉쇄, 3) 핵심 알고리즘 재설정."
+
+명준이 키보드를 두드렸다. "의심 규칙 샌드박스 격리… 백도어 데몬 종료… 포트 443 외 전부 드롭… 완료."
+
+이안이 화이트보드에 큰 세 칸을 그려 붙였다. [   ]  [   ]  [   ]
+이진석이 그 앞에 섰다. "여긴 비워두자. 내일 수업에서 너희가 직접 채울 거다. 오늘은 틀린 길을 걷지 않게 '기본 틀'만 세운다."
+
+하린: "안전 규격을 다시 적용할 항목은 세 가지예요. 우선순위와 금지선, 그리고 설명 가능한 판단."
+명준: "재설계 파이프라인 오픈. 테스트 유닛에만 먼저 적용할게요. 로그는 전부 공개 저장소 미러로 남기고, 사람 판단과 다르면 경고."
+
+테스트 유닛이 부드럽게 부팅됐다. "기존 위험 가중치 제거"가 표시되고, 문제였던 모듈들이 회색으로 비활성화되었다.
+이안이 타임라인에 적었다: 백도어 격리 → 통신 봉쇄 → 판단 규칙 초기화 → 핵심 알고리즘 비워둠
+
+명준이 마지막 확인창을 눌렀다.
+"새로운 알고리즘을 넣어야지"
+"어떤?"
+"뭐겠어? 00,00,00. 이거야."
+"좋아. 한번 해보자구"`.trim();
 
   // === 본문 원문 ===
   const RAW = `
@@ -455,25 +498,19 @@ body{
 두 사람은 말을 멈추고 잠시 유리창 밖을 바라봤다. 창문에 비친 둘의 모습 사이로 회담장 조명이 번졌다. 종이컵을 버린 이진석이 문손잡이를 잡았다.
 
 짧은 휴식이 끝났다. 잠시 뒤, 서강호가 단호하게 선언했다.
-
 “알고리즘 비공개, 전문가 한정 관리.” 
-
 그것이 공식 방침으로 기록되었다.
 
 문을 나서며 김하린은 길게 한숨을 내쉬었다.
-
 “설명되지 않은 알고리즘은… 언젠가 책임 없는 알고리즘이 된다.”
 
 옆에서 걷던 이진석이 잠시 그녀를 바라봤다.
-
 “나도 같은 생각이야. 결국 설명하지 않는 기술은 아이들에게 가르칠 수 없는 기술이지.”
 
 하린은 고개를 끄덕였다.
-
 “우린 서로 다른 자리에서 일하지만, 적어도 같은 걸 지켜 보려고 하는 것 같네.”
 
 이진석은 짧게 웃으며 답했다.
-
 “그래. 언젠가는 아이들과 우리가 함께 답을 찾아야 할 거야.”
 
 그들의 발걸음은 회담장 바깥의 긴 복도에서 나란히 울렸다.
@@ -673,24 +710,17 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
   const overlay = document.getElementById('pdfOverlay');
   const pdfMsg = document.getElementById('pdfMsg');
   const pdfBar = document.getElementById('pdfBar');
-
-  // ====== Storage Keys ======
-  const HL_KEY = 'webbook_highlights_v6';
-  const ch6Key = 'wb_ch6_text';
-  const ch7TitleKey = 'wb_ch7_title';
-  const ch7BodyKey = 'wb_ch7_body';
-  const colophonBodyKey = 'wb_colophon_body';
-  const IMG_KEY = 'wb_image_overrides_v3';
+  const chapNav = document.getElementById('chapNav');
 
   // Highlighter state
   let HL = {};
   try { HL = JSON.parse(localStorage.getItem(HL_KEY) || '{}'); } catch { HL = {}; }
   const saveHL = () => localStorage.setItem(HL_KEY, JSON.stringify(HL));
 
-  // Image overrides (6,7만 교체 가능)
+  // Image overrides (7장만 교체 가능)
   let IMG = {};
   try { IMG = JSON.parse(localStorage.getItem(IMG_KEY) || '{}'); } catch { IMG = {}; }
-  const EDITABLE = new Set(['assets/ch6.png','assets/ch7.png']);
+  const EDITABLE = new Set(['assets/ch7.png']);
   for (const k of Object.keys(IMG)) if (!EDITABLE.has(k)) delete IMG[k];
   const saveIMG = () => localStorage.setItem(IMG_KEY, JSON.stringify(IMG));
   const getImg = (src) => (EDITABLE.has(src) && IMG[src]) ? IMG[src] : src;
@@ -699,6 +729,7 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
   let PAGES = [];
   let NO_NUMBER = [];
   let leftIndex = 0;
+  let CHMAP = {}; // chapNo -> first page index
 
   // Helpers
   function normalize(t){ return t.replace(/\r\n?/g,"\n").trim().replace(/\n{3,}/g,"\n\n"); }
@@ -721,9 +752,10 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     blocks.push(b);
   }
 
-  // === Build content blocks with figure rules ===
+  // === Build content blocks ===
   function buildBlocks(t){
-    const savedCh6 = localStorage.getItem(ch6Key) || "";
+    const userCh6 = localStorage.getItem(ch6Key) || "";
+    const ch6Mode = localStorage.getItem(CH6_MODE_KEY) || 'blank';
     const savedCh7Title = localStorage.getItem(ch7TitleKey) || "";
     const savedCh7Body = localStorage.getItem(ch7BodyKey) || "";
     const savedColophonBody = localStorage.getItem(colophonBodyKey) || getColophonBodyDefault();
@@ -731,55 +763,59 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     const lines = normalize(t).split("\n");
     const blocks = [];
 
-    // Cover pages (1p, 2p) — no page numbers
+    // Covers
     add(blocks,{type:'cover', src:'assets/cover-front.png', alt:'책 표지 — 앞'});
     add(blocks,{type:'forcebreak'});
     add(blocks,{type:'cover', src:'assets/cover-back.png', alt:'책 표지 — 뒤'});
     add(blocks,{type:'forcebreak'});
 
-    // === NEW: 3페이지에 새 그림 고정 삽입 ===
+    // 고정 삽화 페이지(3p)
     add(blocks,{type:'figure', src:'assets/p3.png', alt:'3페이지 삽화', center:true, chap:0});
     add(blocks,{type:'forcebreak'});
 
     let chap = null, chapNo = 0, chapParas = [];
     function pushChapter(){
       if (chap === null) return;
+
       // 각 장은 새 페이지에서 시작
       add(blocks,{type:'forcebreak'});
+      // 장 앵커(현재 페이지에 부착)
+      add(blocks,{type:'anchor', chap:chapNo});
 
-      const titleTxt = (chapNo===7 && savedCh7Title) ? savedCh7Title : chap;
-      const paras = (chapNo===7 && savedCh7Body) ? savedCh7Body.split("\n") : chapParas;
+      // 제목
+      let titleTxt = chap;
+      if (chapNo===6 && ch6Mode==='hidden') titleTxt = HIDDEN_CH6_TITLE;
+      if (chapNo===7 && savedCh7Title) titleTxt = savedCh7Title;
 
-      // 제목을 페이지 세로 1/3 지점 느낌을 주기 위한 leadspace
       add(blocks,{type:'leadspace'});
       add(blocks,{type:'h', text:titleTxt, chap: chapNo});
       if (chapNo===7) add(blocks,{type:'edit7button'});
       add(blocks,{type:'gap', lines:5});
-      for (const p of paras) add(blocks,{type:'p', text:p});
 
-      // === 그림 배치 규칙(원형 유지) ===
-      if (chapNo===1 || chapNo===2 || chapNo===4 || chapNo===5 || chapNo===7){
+      // 본문(6장 히든일 때는 히든 텍스트 전체를 본문으로 출력)
+      if (chapNo===6 && ch6Mode==='hidden'){
+        HIDDEN_CH6_TEXT.split(/\n{2,}/).forEach(p => add(blocks,{type:'p', text:p, ch6hidden:true}));
+      } else {
+        for (const p of chapParas) add(blocks,{type:'p', text:p});
+      }
+
+      // 삽화 배치 규칙
+      if (chapNo===6){
+        // 6장: 히든 본문 → 다음 페이지 중앙 삽화 → 다음 페이지부터 '이야기 고치기'
+        add(blocks,{type:'forcebreak'});
+        add(blocks,{type:'figure', src:`assets/ch6.png`, alt:`제 6 장 삽화`, center:true, chap:6});
+        add(blocks,{type:'forcebreak'});
+        add(blocks,{type:'edit6', text: userCh6}); // 사용자 편집 영역(빈 상태면 면적 최소화)
+        // 다음 장은 pushChapter 시작 forcebreak로 구분됨
+      } else if ([1,2,4,5,7].includes(chapNo)){
+        // 본문 다음 페이지에 중앙 배치
         add(blocks,{type:'forcebreak'});
         add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:true, chap:chapNo});
+        // 뒤에 불필요한 빈 페이지 방지: forcebreak 추가하지 않음
+      } else if (chapNo===3){
+        // 요청: 3장은 텍스트 다음 페이지 '중간 위치'에 삽화
         add(blocks,{type:'forcebreak'});
-        if (chapNo===6){
-          add(blocks,{type:'edit6', text: savedCh6});
-          add(blocks,{type:'forcebreak'});
-        }
-      } else if (chapNo===7){
-        add(blocks,{type:'forcebreak'});
-        add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:false, chap:chapNo, normal:true});
-        add(blocks,{type:'forcebreak'});
-      } else {
-        // 3,6 등: 같은 페이지 말미에 우선 배치 (normal: 높이 50%)
-        add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:false, chap:chapNo, normal:true});
-        if (chapNo===6){
-          add(blocks,{type:'forcebreak'});
-          add(blocks,{type:'edit6', text: savedCh6});
-          add(blocks,{type:'forcebreak'});
-        } else {
-          add(blocks,{type:'forcebreak'});
-        }
+        add(blocks,{type:'figure', src:`assets/ch3.png`, alt:`제 3 장 삽화`, center:true, chap:3});
       }
     }
 
@@ -794,10 +830,9 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     }
     if (chap !== null) pushChapter();
 
-    // 마지막 페이지(발문, 제목 고정 / 본문만 저장)
+    // 발문
     add(blocks,{type:'forcebreak'});
     add(blocks,{type:'colophon', body: savedColophonBody});
-    add(blocks,{type:'forcebreak'});
 
     return blocks;
   }
@@ -809,22 +844,37 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
       const i=document.createElement('img'); i.src=block.src; i.alt=block.alt||'cover'; i.crossOrigin='anonymous';
       w.appendChild(i); return w;
     }
+    if (block.type === 'anchor'){
+      const i=document.createElement('i'); i.className='anchor'; i.setAttribute('data-chap', String(block.chap)); i.style.display='none'; return i;
+    }
     if (block.type === 'leadspace'){ const d=document.createElement('div'); d.className='leadspace'; return d; }
     if (block.type === 'gap'){ const d=document.createElement('div'); d.className='gap5'; return d; }
-    if (block.type === 'h'){ const h=document.createElement('h2'); h.className='chapter'; h.textContent=block.text; return h; }
-    if (block.type === 'p'){ const p=document.createElement('p'); p.textContent=block.text; return p; }
+    if (block.type === 'h'){
+      const h=document.createElement('h2'); h.className='chapter';
+      if (block.chap===6){
+        const txt = block.text.replace('모두의', '<span class="ch6-trigger" title="히든 전개/편집">모두의</span>');
+        h.innerHTML = txt;
+      } else {
+        h.textContent = block.text;
+      }
+      return h;
+    }
+    if (block.type === 'p'){
+      const p=document.createElement('p'); p.textContent=block.text;
+      if (block.ch6hidden) p.classList.add('ch6body');
+      return p;
+    }
 
     if (block.type === 'figure'){
       const f=document.createElement('figure');
       if (block.center) f.className='figure page-center';
       else if (block.normal) f.className='figure normal';
       else f.className='figure';
-
       const img=document.createElement('img'); img.src=getImg(block.src); img.alt=block.alt||''; img.crossOrigin='anonymous';
       f.appendChild(img);
 
-      // 6,7장만 그림 교체/초기화 가능
-      if (block.chap===6 || block.chap===7){
+      // 7장만 그림 교체/초기화 가능
+      if (block.chap===7){
         const g=document.createElement('button'); g.className='ghost-img'; g.setAttribute('data-imgsrc', block.src); g.title='그림 바꾸기';
         const r=document.createElement('button'); r.className='ghost-reset'; r.setAttribute('data-imgsrc', block.src); r.title='그림 초기화';
         f.appendChild(g); f.appendChild(r);
@@ -837,13 +887,13 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     }
 
     if (block.type === 'edit6'){
-      const wrap=document.createElement('div'); wrap.className='editpad'; wrap.style.position='relative'; wrap.style.minHeight='100%';
+      const wrap=document.createElement('div'); wrap.className='editpad'; wrap.style.position='relative';
       const area=document.createElement('div'); area.id='ch6UserText'; area.textContent = block.text || "";
-      area.style.whiteSpace='pre-wrap'; area.style.lineHeight='2.05'; area.style.minHeight='60%';
-      area.style.border='1px dashed #e8decf'; area.style.background='#fffef9'; area.style.borderRadius='8px';
-      area.style.padding='.8rem'; area.style.margin='auto'; wrap.appendChild(area);
-      const btn=document.createElement('button'); btn.className='ghost-btn ghost-right-bottom'; btn.setAttribute('data-action','edit6'); btn.title='이야기 고치기';
-      wrap.appendChild(btn);
+      area.style.whiteSpace='pre-wrap'; area.style.lineHeight='2.05';
+      if (!block.text){ area.style.minHeight='0'; area.style.padding='0'; area.style.border='none'; area.style.background='transparent'; }
+      else { area.style.minHeight='20%'; area.style.border='1px dashed #e8decf'; area.style.background='#fffef9'; area.style.borderRadius='8px'; area.style.padding='.8rem'; }
+      area.style.margin='auto';
+      wrap.appendChild(area);
       return wrap;
     }
 
@@ -857,7 +907,6 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
       body.textContent = onlyBody && onlyBody.trim().length ? onlyBody : getColophonBodyDefault();
       box.appendChild(body); wrap.appendChild(box);
 
-      // 오른쪽 상단 투명 버튼: 본문만 수정
       const btn=document.createElement('button'); btn.className='ghost-btn ghost-right-top'; btn.setAttribute('data-action','editColophon'); btn.title='마지막 페이지 수정';
       wrap.appendChild(btn);
       return wrap;
@@ -869,11 +918,20 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
 
   // === Pagination ===
   function paginate(){
-    PAGES=[]; NO_NUMBER=[];
+    PAGES=[]; NO_NUMBER=[]; CHMAP={};
     const blocks = buildBlocks(RAW);
     const measure = document.getElementById('measure'); measure.innerHTML='';
 
-    const commit = () => { PAGES.push(measure.innerHTML); NO_NUMBER.push(PAGES.length<=2); measure.innerHTML=''; };
+    const commit = () => {
+      if (measure.childNodes.length === 0) { return; } // 빈 페이지 방지
+      const html = measure.innerHTML;
+      // chap anchor 찾기
+      const re = /data-chap="(\d+)"/g; let m;
+      while ((m = re.exec(html)) !== null){ const c=m[1]; if (!CHMAP[c]) CHMAP[c]=PAGES.length; }
+      PAGES.push(html);
+      NO_NUMBER.push(PAGES.length<=2);
+      measure.innerHTML='';
+    };
 
     for (let i=0;i<blocks.length;i++){
       const b = blocks[i];
@@ -892,6 +950,8 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     const savedRaw = localStorage.getItem('webbook_left_index_v6pos');
     const saved = savedRaw===null ? 0 : Number(savedRaw);
     leftIndex = isNaN(saved)?0:Math.min(saved, Math.max(0, PAGES.length-2));
+
+    renderChapNav();
     render();
   }
 
@@ -920,14 +980,28 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
 
     localStorage.setItem('webbook_left_index_v6pos', String(leftIndex));
 
-    // Highlight canvas fit
+    // HL canvas fit
     positionCanvas(leftCanvas, leftWrap); resizeCanvas(leftCanvas);
     if (!isSingle()){ positionCanvas(rightCanvas, rightWrap); resizeCanvas(rightCanvas); } else { rightCanvas.width = rightCanvas.height = 0; }
     redrawHighlights();
 
-    // Ghost handlers & image editors
+    // Handlers
     installGhostHandlers(leftWrap); if(!single) installGhostHandlers(rightWrap);
     installImageEditors(leftWrap); if(!single) installImageEditors(rightWrap);
+
+    // 6장 트리거(‘모두의’) 설치
+    installCh6UI(leftWrap); if(!single) installCh6UI(rightWrap);
+
+    // 6장 히든 전개 애니메이션
+    if (localStorage.getItem(CH6_ANIM_KEY)==='1'){
+      const bodies = document.querySelectorAll('.ch6body');
+      bodies.forEach(el=>el.classList.add('reveal-ch6'));
+      setTimeout(()=>bodies.forEach(el=>el.classList.remove('reveal-ch6')), 1200);
+      localStorage.removeItem(CH6_ANIM_KEY);
+    }
+
+    // 장 버튼 active 표시
+    updateChapNavActive();
   }
 
   function flip(dir){
@@ -978,7 +1052,7 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
 
   (document.fonts?document.fonts.ready:Promise.resolve()).then(paginate);
 
-  // ====== Highlighter (스마트패드 연속 그리기) ======
+  // ====== Highlighter ======
   const HL_COLOR = 'rgba(255, 235, 59, 0.35)';
   const HL_WIDTH = 18;
   let penOn = false;
@@ -1043,21 +1117,44 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     addNP(cv,'pointerup',finish); addNP(cv,'pointercancel',finish); addNP(cv,'pointerleave',finish);
   }
   penBtn.addEventListener('click',()=>{ penOn=!penOn; penBtn.classList.toggle('active',penOn); leftCanvas.style.pointerEvents = rightCanvas.style.pointerEvents = penOn?'auto':'none'; });
-  undoBtn.addEventListener('click',()=>{ const ri=(!(window.matchMedia('(max-width: 1100px)').matches) && (HL[currentRightIndex()]||[]).length>0)?currentRightIndex():leftIndex; if(HL[ri] && HL[ri].length){ HL[ri].pop(); saveHL(); redrawHighlights(); }});
-  clearBtn.addEventListener('click',()=>{ const ri=currentRightIndex(); if(confirm('현재 펼친 페이지의 형광펜 표시를 모두 지울까요?')){ if(HL[leftIndex]) delete HL[leftIndex]; if(!(window.matchMedia('(max-width: 1100px)').matches) && HL[ri]) delete HL[ri]; saveHL(); redrawHighlights(); }});
+  undoBtn.addEventListener('click',()=>{
+    const ri=(!(window.matchMedia('(max-width: 1100px)').matches) && (HL[currentRightIndex()]||[]).length>0)?currentRightIndex():leftIndex;
+    if(HL[ri] && HL[ri].length){ HL[ri].pop(); saveHL(); redrawHighlights(); }
+  });
+  clearBtn.addEventListener('click',()=>{
+    const ri=currentRightIndex();
+    if(confirm('현재 펼친 페이지의 형광펜 표시를 모두 지울까요?')){
+      if(HL[leftIndex]) delete HL[leftIndex];
+      if(!(window.matchMedia('(max-width: 1100px)').matches) && HL[ri]) delete HL[ri];
+      saveHL(); redrawHighlights();
+    }
+  });
   enableDrawing(leftCanvas,'left'); enableDrawing(rightCanvas,'right');
 
-  // ====== Ghost handlers (6장/7장/발문 편집) ======
+  // ====== Ghost handlers (7장/발문 편집) ======
+  function openCh6Editor(){
+    openEditor('6장 이야기 고치기', [
+      {id:'t6', label:'내용', type:'textarea', value: localStorage.getItem(ch6Key)||''}
+    ], (vals)=>{
+      localStorage.setItem(ch6Key, (vals.t6||''));
+      localStorage.setItem(CH6_MODE_KEY,'hidden'); // 히든 상태 유지
+      localStorage.setItem(CH6_ANIM_KEY,'1');
+      paginate();
+    }, { 
+      resetLabel:'초기화(6장만)', 
+      onReset: ()=>{
+        localStorage.removeItem(ch6Key);
+        localStorage.setItem(CH6_MODE_KEY,'blank');
+        localStorage.removeItem(CH6_ANIM_KEY);
+        paginate();
+      } 
+    });
+  }
+
   function installGhostHandlers(container){
     container.querySelectorAll('.ghost-btn').forEach(btn => {
       btn.addEventListener('click', ()=>{
         const act = btn.getAttribute('data-action');
-        if (act==='edit6') openEditor('6장 이야기 고치기', [
-          {id:'t6', label:'내용', type:'textarea', value: localStorage.getItem(ch6Key)||''}
-        ], (vals)=>{
-          localStorage.setItem(ch6Key, (vals.t6||'')); paginate();
-        }, { resetLabel:'초기화(6장만)', onReset: ()=>{ localStorage.removeItem(ch6Key); paginate(); } });
-
         if (act==='edit7') openEditor('7장 제목과 이야기 고쳐보기', [
           {id:'t7title', label:'제목', type:'input', value: localStorage.getItem(ch7TitleKey)||''},
           {id:'t7body', label:'이야기', type:'textarea', value: localStorage.getItem(ch7BodyKey)||''},
@@ -1078,7 +1175,7 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     });
   }
 
-  // ====== Image editors (6,7만 교체/초기화) ======
+  // ====== Image editors (7장만) ======
   let fileInput = null;
   function ensureFileInput(){
     if (fileInput) return fileInput;
@@ -1113,6 +1210,22 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     });
   }
 
+  // ====== 6장 헤더 트리거(‘모두의’ → 투명 버튼) ======
+  function installCh6UI(container){
+    const t = container.querySelector('.ch6-trigger');
+    if (!t) return;
+    t.addEventListener('click', ()=>{
+      const mode = localStorage.getItem(CH6_MODE_KEY) || 'blank';
+      if (mode!=='hidden'){
+        localStorage.setItem(CH6_MODE_KEY, 'hidden');
+        localStorage.setItem(CH6_ANIM_KEY, '1');
+        paginate();
+      } else {
+        openCh6Editor();
+      }
+    }, {once:false});
+  }
+
   // ====== Modal Editor ======
   function openEditor(titleText, fields, onSave, options){
     mTitle.textContent = titleText;
@@ -1130,7 +1243,6 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     mCancel.onclick = close;
     mSave.onclick = ()=>{ const vals={}; for(const k in refs) vals[k]=refs[k].value; onSave(vals); close(); };
 
-    // Reset 버튼(선택)
     const footer = mSave.parentElement;
     let existing = footer.querySelector('.btn.danger'); if (existing) existing.remove();
     if (options && options.onReset){
@@ -1140,6 +1252,33 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
       footer.insertBefore(resetBtn, mSave);
     }
     modal.addEventListener('click',(e)=>{ if(e.target===modal) close(); }, {once:false});
+  }
+
+  // ====== Chapter Nav ======
+  function renderChapNav(){
+    chapNav.innerHTML = '';
+    for (let n=1;n<=7;n++){
+      const b=document.createElement('button'); b.className='chapbtn'; b.textContent = n+'장';
+      b.setAttribute('data-chapjump', String(n));
+      b.addEventListener('click', ()=>{
+        const idx = CHMAP[String(n)] ?? 0;
+        leftIndex = isSingle()? idx : (idx%2===0? idx : Math.max(0, idx-1));
+        render();
+      });
+      chapNav.appendChild(b);
+    }
+  }
+  function updateChapNavActive(){
+    if (!chapNav) return;
+    chapNav.querySelectorAll('.chapbtn').forEach(b=>b.classList.remove('active'));
+    let cur = 1, minDist = Infinity;
+    for (const k in CHMAP){
+      const p = CHMAP[k];
+      const dist = Math.max(0, leftIndex - p);
+      if (leftIndex>=p && dist < minDist){ minDist=dist; cur = Number(k); }
+    }
+    const act = chapNav.querySelector(`.chapbtn[data-chapjump="${cur}"]`);
+    if (act) act.classList.add('active');
   }
 
   // ====== Robust PDF Export ======
