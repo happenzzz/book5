@@ -804,90 +804,92 @@ IQ 300에 가까운 연산 모듈이 즉시 전권을 쥐었다. 센서는 눈�
     blocks.push(b);
   }
 
-  // === Build content blocks ===
-  function buildBlocks(t){
-    const userCh6 = localStorage.getItem(ch6Key) || "";
-    const ch6Mode = localStorage.getItem(CH6_MODE_KEY) || 'blank';
-    const savedCh7Title = localStorage.getItem(ch7TitleKey) || "";
-    const savedCh7Body = localStorage.getItem(ch7BodyKey) || "";
-    const savedColophonBody = localStorage.getItem(colophonBodyKey) || getColophonBodyDefault();
+// === Build content blocks ===
+function buildBlocks(t){
+  const userCh6 = localStorage.getItem(ch6Key) || "";
+  const ch6Mode = localStorage.getItem(CH6_MODE_KEY) || 'blank';
+  const savedCh7Title = localStorage.getItem(ch7TitleKey) || "";
+  const savedCh7Body  = localStorage.getItem(ch7BodyKey)  || "";
+  const savedColophonBody = localStorage.getItem(colophonBodyKey) || getColophonBodyDefault();
 
-    const lines = normalize(t).split("\n");
-    const blocks = [];
+  const lines = normalize(t).split("\n");
+  const blocks = [];
 
-    // Covers
-    add(blocks,{type:'cover', src:'assets/cover-front.png', alt:'책 표지 — 앞'});
+  // Covers
+  add(blocks,{type:'cover', src:'assets/cover-front.png', alt:'책 표지 — 앞'});
+  add(blocks,{type:'forcebreak'});
+  add(blocks,{type:'cover', src:'assets/cover-back.png', alt:'책 표지 — 뒤'});
+  add(blocks,{type:'forcebreak'});
+
+  // 고정 삽화 페이지(3p)
+  add(blocks,{type:'figure', src:'assets/p3.png', alt:'3페이지 삽화', center:true, chap:0});
+  add(blocks,{type:'forcebreak'});
+
+  let chap = null, chapNo = 0, chapParas = [];
+  function pushChapter(){
+    if (chap === null) return;
+
+    // 각 장은 새 페이지에서 시작
     add(blocks,{type:'forcebreak'});
-    add(blocks,{type:'cover', src:'assets/cover-back.png', alt:'책 표지 — 뒤'});
-    add(blocks,{type:'forcebreak'});
+    // 장 앵커(현재 페이지에 부착)
+    add(blocks,{type:'anchor', chap:chapNo});
 
-    // 고정 삽화 페이지(3p)
-    add(blocks,{type:'figure', src:'assets/p3.png', alt:'3페이지 삽화', center:true, chap:0});
-    add(blocks,{type:'forcebreak'});
+    // 제목
+    let titleTxt = chap;
+    if (chapNo===6 && ch6Mode==='hidden') titleTxt = HIDDEN_CH6_TITLE;
+    if (chapNo===7 && savedCh7Title)      titleTxt = savedCh7Title;
 
-    let chap = null, chapNo = 0, chapParas = [];
-    function pushChapter(){
-      if (chap === null) return;
+    add(blocks,{type:'leadspace'});
+    add(blocks,{type:'h', text:titleTxt, chap: chapNo});
+    if (chapNo===7) add(blocks,{type:'edit7button'});
+    add(blocks,{type:'gap', lines:5});
 
-      // 각 장은 새 페이지에서 시작
+    // 본문
+    if (chapNo===6 && ch6Mode==='hidden'){
+      HIDDEN_CH6_TEXT
+        .split(/\n{2,}/)
+        .forEach(p => add(blocks,{type:'p', text:p, ch6hidden:true}));
+    } else {
+      // ✅ FIX: 7장 본문은 저장된 사용자 텍스트가 있으면 그걸로 대체
+      const bodyParas = (chapNo===7 && savedCh7Body && savedCh7Body.trim())
+        ? normalize(savedCh7Body).split(/\n{2,}/)
+        : chapParas;
+      for (const p of bodyParas) add(blocks,{type:'p', text:p});
+    }
+
+    // 삽화 배치 규칙
+    if (chapNo===6){
       add(blocks,{type:'forcebreak'});
-      // 장 앵커(현재 페이지에 부착)
-      add(blocks,{type:'anchor', chap:chapNo});
-
-      // 제목
-      let titleTxt = chap;
-      if (chapNo===6 && ch6Mode==='hidden') titleTxt = HIDDEN_CH6_TITLE;
-      if (chapNo===7 && savedCh7Title) titleTxt = savedCh7Title;
-
-      add(blocks,{type:'leadspace'});
-      add(blocks,{type:'h', text:titleTxt, chap: chapNo});
-      if (chapNo===7) add(blocks,{type:'edit7button'});
-      add(blocks,{type:'gap', lines:5});
-
-      // 본문(6장 히든일 때는 히든 텍스트 전체를 본문으로 출력)
-      if (chapNo===6 && ch6Mode==='hidden'){
-        HIDDEN_CH6_TEXT.split(/\n{2,}/).forEach(p => add(blocks,{type:'p', text:p, ch6hidden:true}));
-      } else {
-        for (const p of chapParas) add(blocks,{type:'p', text:p});
-      }
-
-      // 삽화 배치 규칙
-      if (chapNo===6){
-        // 6장: 히든 본문 → 다음 페이지 중앙 삽화 → 다음 페이지부터 '이야기 고치기'
-        add(blocks,{type:'forcebreak'});
-        add(blocks,{type:'figure', src:`assets/ch6.png`, alt:`제 6 장 삽화`, center:true, chap:6});
-        add(blocks,{type:'forcebreak'});
-        add(blocks,{type:'edit6', text: userCh6}); // 사용자 편집 영역(빈 상태면 면적 최소화)
-        // 다음 장은 pushChapter 시작 forcebreak로 구분됨
-      } else if ([1,2,4,5,7].includes(chapNo)){
-        // 본문 다음 페이지에 중앙 배치
-        add(blocks,{type:'forcebreak'});
-        add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:true, chap:chapNo});
-        // 뒤에 불필요한 빈 페이지 방지: forcebreak 추가하지 않음
-      } else if (chapNo===3){
-        // 요청: 3장은 텍스트 다음 페이지 '중간 위치'에 삽화
-        add(blocks,{type:'forcebreak'});
-        add(blocks,{type:'figure', src:`assets/ch3.png`, alt:`제 3 장 삽화`, center:true, chap:3});
-      }
+      add(blocks,{type:'figure', src:`assets/ch6.png`, alt:`제 6 장 삽화`, center:true, chap:6});
+      add(blocks,{type:'forcebreak'});
+      add(blocks,{type:'edit6', text: userCh6});
+    } else if ([1,2,4,5,7].includes(chapNo)){
+      add(blocks,{type:'forcebreak'});
+      add(blocks,{type:'figure', src:`assets/ch${chapNo}.png`, alt:`제 ${chapNo} 장 삽화`, center:true, chap:chapNo});
+    } else if (chapNo===3){
+      add(blocks,{type:'forcebreak'});
+      add(blocks,{type:'figure', src:`assets/ch3.png`, alt:`제 3 장 삽화`, center:true, chap:3});
     }
-
-    for (const ln of lines){
-      const m = ln.match(/^\s*제\s*(\d+)\s*장/);
-      if (m){
-        if (chap !== null) pushChapter();
-        chapNo = Number(m[1]); chap = ln.trim(); chapParas = [];
-        continue;
-      }
-      chapParas.push(ln);
-    }
-    if (chap !== null) pushChapter();
-
-    // 발문
-    add(blocks,{type:'forcebreak'});
-    add(blocks,{type:'colophon', body: savedColophonBody});
-
-    return blocks;
   }
+
+  for (const ln of lines){
+    const m = ln.match(/^\s*제\s*(\d+)\s*장/);
+    if (m){
+      if (chap !== null) pushChapter();
+      chapNo = Number(m[1]); chap = ln.trim(); chapParas = [];
+      continue;
+    }
+    chapParas.push(ln);
+  }
+  if (chap !== null) pushChapter();
+
+  // 발문
+  add(blocks,{type:'forcebreak'});
+  add(blocks,{type:'colophon', body: savedColophonBody});
+
+  return blocks;
+}
+
 
   // === Node factory ===
   function nodeFor(block){
